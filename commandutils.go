@@ -1,6 +1,7 @@
 package go_utils
 
 import (
+	"bytes"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -51,6 +52,18 @@ func ExecuteCommandAndGetResults(command string) (string, error) {
 		cmd = exec.Command(words[0], words[1:]...)
 	}
 
-	output, err := cmd.Output()
-	return strings.Trim(string(output), "\n"), err
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err = cmd.Run()
+	if err != nil {
+		return "", err
+	}
+
+	error_s := string(stderr.Bytes())
+	if len(error_s) > 0 {
+		fmt.Printf("ERROR: %s", error_s)
+	}
+
+	return strings.Trim(string(stdout.Bytes()), "\n"), err
 }
